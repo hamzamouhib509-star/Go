@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>مشاهدة إعلان Monetag</title>
+
+  <!-- 1) ملف Telegram Web App (لازم قبل أي سكربت يستخدم Telegram.WebApp) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; direction: rtl; text-align: center; padding: 20px; background:#f4f6f8; }
+    .card { max-width:720px; margin:20px auto; background:#fff; border-radius:12px; padding:20px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    #ad-box { min-height:260px; border:2px dashed #ddd; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#fafafa; }
+    button { margin-top:16px; padding:12px 18px; border-radius:8px; border:0; cursor:pointer; font-size:16px; }
+    #watch-btn { background:#2b9cff; color:white; }
+    #watch-btn[disabled] { opacity:0.5; cursor:not-allowed; }
+    small { color:#666; display:block; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>👁️ شاهد الإعلان وارسل تأكيد</h2>
+    <div id="ad-box">
+      <!-- هنا سيطبع السكربت الإعلان تلقائياً (إذا عمل مع WebView) -->
+      <div id="ad-content">جارٍ تحميل الإعلان...</div>
+    </div>
+
+    <button id="watch-btn" disabled>انتظر ... سيتم التفعيل تلقائياً</button>
+    <small>إذا لم يظهر الإعلان جرّب فتح الرابط في متصفح عادي أولاً للتأكد.</small>
+  </div>
+
+  <!-- ===  كود Monetag (الكود الذي أعطيته) === -->
+  <script src='//libtl.com/sdk.js' data-zone='9910261' data-sdk='show_9910261'></script>
+
+  <script>
+    // تهيئة Telegram Web App
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+    // مفيد لتجربة أولية: نفتح الصفحة خارج Telegram لمراقبة الإعلان
+    function enableWatchButton() {
+      const btn = document.getElementById('watch-btn');
+      btn.disabled = false;
+      btn.textContent = "✅ أضغط هنا إذا أنهيت المشاهدة";
+    }
+
+    // نبي نفعل الزر بعد 20 ثانية (مثال) — عدّل القيمة حسب حاجتك
+    setTimeout(() => {
+      // لو الإعلان ظاهر ممكن تفعل الزر بعد زمن المشاهدة المطلوب
+      enableWatchButton();
+    }, 20000); // 20000ms = 20 ثانية
+
+    // زر الإبلاغ للبوت أن المستخدم شاهد الإعلان
+    document.getElementById('watch-btn').addEventListener('click', function () {
+      const payload = {
+        event: "ad_watched",
+        zone: "9910261",
+        ts: Date.now()
+      };
+      try {
+        // 1) أرسل بيانات كبَسِيط للنص للبوت (سيصل في msg.web_app_data.data)
+        if (tg && tg.sendData) {
+          tg.sendData(JSON.stringify(payload));
+          // 2) إغلاق الميني آب داخل تطبيق التيليجرام
+          if (tg.close) tg.close();
+        } else {
+          // لو الصفحة فتحت في متصفح عادي، نعرض رسالة
+          alert("تم (محلياً): " + JSON.stringify(payload));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    // ملاحظة: بعض شبكات الإعلانات قد لا تُعرض داخل WebView لتيليجرام => إذا لم يظهر الإعلان، افتح الرابط مباشرة في المتصفح للتجربة.
+  </script>
+</body>
+</html>
